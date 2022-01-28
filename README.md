@@ -5,6 +5,16 @@ This repository contains code to train and compare different **Deep Learning bas
 The objective of these models is to detect the right ventricle insertion point (RVIP) in cine short axis (SAX) cardiac magnetic resonance (CMR) images. 
 Furthermore, this repo was used in the paper **Comparison of Evaluation Metrics for Landmark Detection in CMR Images** ([arxiv](https://arxiv.org/abs/2201.10410)) to demonstrate very likely pitfalls of apparently simple detection and localisation metrics.
 
+This Readme covers the following topics:
+- [Cite and Paper](#paper)
+- [Abstract](#abstract)
+- [Code and Repo Overview](#project-overview)
+- [Datasets used](#datasets)
+- [Trainings scripts](#training)
+- [Prediction scripts](#prediction)
+- [Evaluation scripts dataframe description](#evaluation)
+- [Setup instructions](#setup)
+
 
 
 # Paper
@@ -27,7 +37,7 @@ Please cite the following paper if you use/modify or adapt part of the code from
 Cardiac Magnetic Resonance (CMR) images are widely used for cardiac diagnosis and ventricular assessment. Extracting specific landmarks like the right ventricular insertion points is of importance for spatial alignment and 3D modeling. The automatic detection of such landmarks has been tackled by multiple groups using Deep Learning, but relatively little attention has been paid to the failure cases of evaluation metrics in this field. In this work, we extended the public ACDC dataset with additional labels of the right ventricular insertion points and compare different variants of a heatmap-based landmark detection pipeline. In this comparison, we demonstrate very likely pitfalls of apparently simple detection and localisation metrics which highlights the importance of a clear detection strategy and the definition of an upper limit for localisation-based metrics. Our preliminary results indicate that a combination of different metrics is necessary, as they yield different winners for method comparison. Additionally, they highlight the need of a comprehensive metric description and evaluation standardisation, especially for the error cases where no metrics could be computed or where no lower/upper boundary of a metric exists
 
 
-# Project Overview
+# Project-Overview
 
 - The repository dependencies are saved as conda environment (environment.yaml) file. 
 - The Deep Learning models/layers are build with TF 2.X.
