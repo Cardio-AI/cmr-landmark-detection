@@ -102,7 +102,7 @@ Slices close to the apex or base with uncertain placement positions were not lab
 Our trainings script support single and multi-GPU training (data-parallelisms) and should run locally, and on clusters.
 The trainings-flow is as follows:
 
-1. Re-use or modify one of the example configs provided in exp/template_cfgs
+1. Re-use or modify one of the example configs provided in [exp/template_cfgs](exp/template_cfgs/example_config.json)
 2. Run src/models/train_model.py, which parse the following arguments:
 
             -cfg (Path (str) to an experiment config, you can find examples in exp/template_cfgs)
