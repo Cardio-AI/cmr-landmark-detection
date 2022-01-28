@@ -3,7 +3,7 @@ Deep Learning based Landmark Detection Framework for CMR Images
 
 This repository contains code to train and compare different **Deep Learning based landmark detection** models on 3D cardiac magnetic resonance (CMR) cine images.
 The objective of these models is to detect the right ventricle insertion point (RVIP) in cine short axis (SAX) cardiac magnetic resonance (CMR) images. 
-Furthermore, this repo was used in the paper **Comparison of evaluation metrics for landmark detection in CMR images** to demonstrate very likely pitfalls of apparently simple detection and localisation metrics.
+Furthermore, this repo was used in the paper **Comparison of Evaluation Metrics for Landmark Detection in CMR Images**[arxiv](https://arxiv.org/abs/2201.10410) to demonstrate very likely pitfalls of apparently simple detection and localisation metrics.
 
 # Paper
 
