@@ -5,6 +5,8 @@ This repository contains code to train and compare different **Deep Learning bas
 The objective of these models is to detect the right ventricle insertion point (RVIP) in cine short axis (SAX) cardiac magnetic resonance (CMR) images. 
 Furthermore, this repo was used in the paper **Comparison of Evaluation Metrics for Landmark Detection in CMR Images**[arxiv](https://arxiv.org/abs/2201.10410) to demonstrate very likely pitfalls of apparently simple detection and localisation metrics.
 
+
+
 # Paper
 
 Please cite the following paper if you use/modify or adapt part of the code from this repository:
@@ -75,11 +77,12 @@ Cardiac Magnetic Resonance (CMR) images are widely used for cardiac diagnosis an
 This repository uses the public available [ACDC dataset](https://www.creatis.insa-lyon.fr/Challenge/acdc/databases.html). 
 
 Within this work we extended the public dataset by binary labels of the right ventricular insertion points (RVIP). [link](https://heibox.uni-heidelberg.de/f/aa4baab97b78481a9bac/?dl=1)
+
 Furthermore, we provide a dataframe with a pathology-based splitting of the ACDC patients which could be used for a 4-fold cross-validation. [link](https://heibox.uni-heidelberg.de/f/03f57e89dc8b46668144/?dl=1)
 
 The ACDC dataset could be downloaded here: [acdc-download-link](https://acdc.creatis.insa-lyon.fr/#challenges).
 
-Once you downloaded the original data, you can extend the official data with our labels. 
+Once you downloaded the original data, you can extend the official CMR images with our RVIP labels. 
 
 We provide a Python [script](src/data/make_dataset.py)
 and a [notebook](notebooks/Dataset/Prepare_data.ipynb) for data merging and 2D slice creation.
