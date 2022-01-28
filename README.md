@@ -74,12 +74,12 @@ Cardiac Magnetic Resonance (CMR) images are widely used for cardiac diagnosis an
 ## Datasets:
 This repository uses the public available [ACDC dataset](https://www.creatis.insa-lyon.fr/Challenge/acdc/databases.html). 
 
-Within this work we extended the public dataset by binary labels of the right ventricular insertion points (RVIP). 
-Furthermore, we provide a dataframe with a pathology-based splitting of the ACDC patients which could be used for a 4-fold cross-validation.
+Within this work we extended the public dataset by binary labels of the right ventricular insertion points (RVIP). [link](https://heibox.uni-heidelberg.de/f/aa4baab97b78481a9bac/?dl=1)
+Furthermore, we provide a dataframe with a pathology-based splitting of the ACDC patients which could be used for a 4-fold cross-validation. [link](https://heibox.uni-heidelberg.de/f/03f57e89dc8b46668144/?dl=1)
 
 The ACDC dataset could be downloaded here: [acdc-download-link](https://acdc.creatis.insa-lyon.fr/#challenges).
 
-Once you downloaded the original data, you can extend this data with our labels. 
+Once you downloaded the original data, you can extend the official data with our labels. 
 
 We provide a Python [script](src/data/make_dataset.py)
 and a [notebook](notebooks/Dataset/Prepare_data.ipynb) for data merging and 2D slice creation.
