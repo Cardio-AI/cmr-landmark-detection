@@ -1,0 +1,82 @@
+{
+    "GPU_IDS": "0,1",
+    "GPUS":
+    [
+        "/gpu:0",
+        "/gpu:1"
+    ],
+    "SEED": 42,
+    "EXPERIMENT": "baseline_spacing1_2_dim224_rot_shift_grid_hist/",
+    "EXPERIMENTS_ROOT": "exp/",
+    "DATA_PATH_SAX": "/mnt/ssd/data/acdc/wft2021/rvip/2D",
+    "DF_FOLDS": "/mnt/ssd/data/acdc/wft2021/rvip/df_kfold.csv",
+    "FOLD": 0,
+    "FOLDS" : [0, 1, 2, 3],
+    "BATCHSIZE": 16,
+    "GENERATOR_WORKER": 32,
+    "EPOCHS": 500,
+    "DIM":
+    [
+        224,
+        224
+    ],
+    "SPACING":
+    [
+        1.2,
+        1.2
+    ],
+    "DEPTH": 4,
+    "FILTERS": 32,
+    "M_POOL":
+    [
+        2,
+        2
+    ],
+    "F_SIZE":
+    [
+        3,
+        3
+    ],
+    "BN_FIRST": false,
+    "BATCH_NORMALISATION": true,
+    "PAD": "same",
+    "KERNEL_INIT": "he_normal",
+    "OPTIMIZER": "adam",
+    "ACTIVATION": "relu",
+    "LEARNING_RATE": 0.0001,
+    "REDUCE_LR_ON_PLAEAU_PATIENCE": 5,
+    "DECAY_FACTOR": 0.7,
+    "POLY_LR_DECAY": false,
+    "MIN_LR": 1E-12,
+    "DROPOUT_MIN": 0.3,
+    "DROPOUT_MAX": 0.5,
+    "MONITOR_FUNCTION": "loss",
+    "MONITOR_MODE": "min",
+    "SAVE_MODEL_FUNCTION": "loss",
+    "SAVE_MODEL_MODE": "min",
+    "MODEL_PATIENCE": 20,
+    "SAVE_LEARNING_PROGRESS_AS_TF": true,
+    "IMG_CHANNELS": 1,
+    "MASK_VALUES":
+    [
+        1,
+        2
+    ],
+    "MASK_CLASSES": 2,
+    "GAUS": false,
+    "SIGMA": 1,
+    "BORDER_MODE": 4,
+    "IMG_INTERPOLATION": 2,
+    "MSK_INTERPOLATION": 1,
+    "AUGMENT": true,
+    "RANDOMROTATE" : true,
+    "SHIFTSCALEROTATE": true,
+    "GRIDDISTORTION": true,
+    "DOWNSCALE": false,
+    "AUGMENT_PROB": 0.8,
+    "SHUFFLE": true,
+    "RESAMPLE": true,
+    "HIST_MATCHING": true,
+    "SCALER": "MinMax",
+    "LOSS_FUNCTION": "BcdDiceLoss"
+}
