@@ -9,10 +9,10 @@ This Readme covers the following topics:
 - [Cite and Paper](#paper)
 - [Abstract](#abstract)
 - [Code and Repo Overview](#project-overview)
-- [Datasets used](#datasets)
+- [Dataset description](#datasets)
 - [Trainings scripts](#training)
 - [Prediction scripts](#prediction)
-- [Evaluation scripts dataframe description](#evaluation)
+- [Evaluation scripts and dataframe description](#evaluation)
 - [Setup instructions](#setup)
 
 
