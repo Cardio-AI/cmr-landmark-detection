@@ -19,7 +19,7 @@ This Readme covers the following topics:
 
 # Paper
 
-Please cite the following paper if you use/modify or adapt part of the code from this repository:
+Please cite the following paper (accepted at Bildverarbeitung für die Medizin (BVM), Informatik aktuell. Springer Vieweg, Wiesbaden 2022) if you use/modify or adapt parts of this repository:
 
     @misc{koehler2022comparison,
           title={Comparison of Evaluation Metrics for Landmark Detection in CMR Images}, 
