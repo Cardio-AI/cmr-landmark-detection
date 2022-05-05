@@ -285,7 +285,7 @@ def main(args=None):
         train_fold(config_, in_memory=True)
         print('training of fold: {} finished'.format(f))
     from src.models.evaluate_cv import evaluate_cv
-    evaluate_cv(os.path.join(EXPERIMENTS_ROOT, EXPERIMENT), args.data)
+    #evaluate_cv(os.path.join(EXPERIMENTS_ROOT, EXPERIMENT), args.data)
 
 
 if __name__ == "__main__":

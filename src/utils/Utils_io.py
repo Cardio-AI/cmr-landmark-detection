@@ -69,9 +69,10 @@ class Console_and_file_logger():
         if not logger.handlers:
 
             # Define debug logfile handler
-            hdlr = logging.FileHandler(log_f)
+            # writing all debug messages to file results in bad IO on the SDS cluster, maybe skip this here
+            """hdlr = logging.FileHandler(log_f)
             hdlr.setFormatter(formatter)
-            hdlr.setLevel(logging.DEBUG)
+            hdlr.setLevel(logging.DEBUG)"""
 
             # Define info console handler
             hdlr_console = logging.StreamHandler()
@@ -86,7 +87,7 @@ class Console_and_file_logger():
             hdlr_error.setLevel(logging.ERROR)
 
             # Add all handlers to our logger instance
-            logger.addHandler(hdlr)
+            #logger.addHandler(hdlr)
             logger.addHandler(hdlr_console)
             logger.addHandler(hdlr_error)
 
