@@ -17,7 +17,6 @@ from tensorflow.keras.layers import Multiply
 from tensorflow.keras.layers import Input
 from tensorflow.keras.layers import concatenate
 from tensorflow.keras.models import Model
-from tensorflow.keras.utils import multi_gpu_model
 from tensorflow.keras import backend as K
 
 # address some interface discrepancies when using tensorflow.keras
@@ -1004,7 +1003,7 @@ def test_unet():
     :return: prints model summary file
     """
     try:
-        from src.utils.utils_io import Console_and_file_logger
+        from src.utils.Utils_io import Console_and_file_logger
         Console_and_file_logger('test 2d network')
     except Exception as e:
         print("no logger defined, use print")
