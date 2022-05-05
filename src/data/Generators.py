@@ -267,16 +267,9 @@ class DataGenerator(BaseGenerator):
             futures = [self.THREAD_POOL.submit(self.__fix_preprocessing__, i) for i in range(len(self.IMAGES))]
             for i, future in enumerate(as_completed(futures)):
                 zipped.append(future.result())
-            self.IMAGES, self.LABELS = list(map(list, zip(*zipped)))
+            self.IMAGES_PROCESSED, self.LABELS_PROCESSED = list(map(list, zip(*zipped)))
 
     def __fix_preprocessing__(self, ID):
-
-        ref = None
-        apply_hist_matching = self.HIST_MATCHING and random.random() < self.AUGMENT_PROB
-        if apply_hist_matching:
-            ref = sitk.GetArrayFromImage(sitk.ReadImage((choice(self.IMAGES))))
-            if ref.ndim == 3:  # for 2D we dont need to select one slice
-                ref = ref[choice(list(range(ref.shape[0] - 1)))]  # choose o random slice as reference
 
         t0 = time()
 
@@ -290,11 +283,6 @@ class DataGenerator(BaseGenerator):
 
         self.__plot_state_if_debug__(sitk_img, sitk_msk, t0, 'raw')
         t1 = time()
-
-        if apply_hist_matching:
-            matched = mhist(sitk.GetArrayFromImage(sitk_img), ref)
-            sitk_img = copy_meta_and_save(new_image=matched, reference_sitk_img=sitk_img, full_filename=None,
-                                          override_spacing=None, copy_direction=True)
 
         if self.RESAMPLE:
             if sitk_img.GetDimension() in [2, 3]:
@@ -345,13 +333,24 @@ class DataGenerator(BaseGenerator):
     def __preprocess_one_image__(self, i, ID):
         t0 = time()
 
+        ref = None
+        apply_hist_matching = self.HIST_MATCHING and random.random() < self.AUGMENT_PROB
+        if apply_hist_matching:
+            ref = sitk.GetArrayFromImage(sitk.ReadImage((choice(self.IMAGES))))
+            ref = pad_and_crop(ref, target_shape=self.DIM) # this is not resampled, safe computation time
+            if ref.ndim == 3:  # for 2D we dont need to select one slice
+                ref = ref[choice(list(range(ref.shape[0] - 1)))]  # choose o random slice as reference
+
         if self.IN_MEMORY:
-            img_nda, mask_nda = self.IMAGES[ID], self.LABELS[ID]
+            img_nda, mask_nda = self.IMAGES_PROCESSED[ID], self.LABELS_PROCESSED[ID]
         else:
             img_nda, mask_nda = self.__fix_preprocessing__(ID)
         t1 = time()
 
         if self.AUGMENT:  # augment data with albumentation
+            if apply_hist_matching:
+                img_nda = mhist(img_nda, ref)
+
             # use albumentation to apply random rotation scaling and shifts
             img_nda, mask_nda = augmentation_compose_2d_3d_4d(img_nda, mask_nda, probabillity=0.8, config=self.config)
 
