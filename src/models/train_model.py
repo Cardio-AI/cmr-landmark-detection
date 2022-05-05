@@ -28,24 +28,23 @@ def train_fold(config, in_memory=True):
     # make all config params known to the local namespace
     locals().update(config)
 
-    # overwrite the experiment names and paths, so that each cv gets an own sub-folder
     EXPERIMENT = config.get('EXPERIMENT')
     FOLD = config.get('FOLD')
 
-    EXPERIMENT = '{}_f{}'.format(EXPERIMENT, FOLD)
-    timestemp = str(datetime.datetime.now().strftime(
-        "%Y-%m-%d_%H_%M"))  # add a timestep to each project to make repeated experiments unique
+    EXPERIMENT = '{}f{}'.format(EXPERIMENT, FOLD)
+    """timestemp = str(datetime.datetime.now().strftime(
+        "%Y-%m-%d_%H_%M"))"""  # add a timestep to each project to make repeated experiments unique
 
     EXPERIMENTS_ROOT = 'exp/'
-    EXP_PATH = os.path.join(EXPERIMENTS_ROOT, EXPERIMENT, timestemp)
-    MODEL_PATH = os.path.join(EXP_PATH, 'model', )
-    TENSORBOARD_PATH = os.path.join(EXP_PATH, 'tensorboard_logs')
-    CONFIG_PATH = os.path.join(EXP_PATH, 'config')
-    HISTORY_PATH = os.path.join(EXP_PATH, 'history')
+    EXP_PATH = config.get('EXP_PATH')
+    FOLD_PATH = os.path.join(EXP_PATH, 'f{}'.format(FOLD))
+    MODEL_PATH = os.path.join(FOLD_PATH, 'model', )
+    TENSORBOARD_PATH = os.path.join(FOLD_PATH, 'tensorboard_logs')
+    CONFIG_PATH = os.path.join(FOLD_PATH, 'config')
+
     ensure_dir(MODEL_PATH)
     ensure_dir(TENSORBOARD_PATH)
     ensure_dir(CONFIG_PATH)
-    ensure_dir(HISTORY_PATH)
 
     DATA_PATH_SAX = config.get('DATA_PATH_SAX')
     DF_FOLDS = config.get('DF_FOLDS')
@@ -54,9 +53,9 @@ def train_fold(config, in_memory=True):
     # Check if these channels are given
     metrics = [
         metr.dice_coef_labels,  # combination channel
-        metr.dice_coef_lower,  # former Myo
-        metr.dice_coef_upper,  # former LV
-        # metr.dice_coef_rv # third channel, not needed
+        metr.dice_coef_myo,  # former Myo
+        metr.dice_coef_lv,  # former LV
+        metr.dice_coef_rv # third channel, not needed
     ]
 
     Console_and_file_logger(path=EXP_PATH, log_lvl=logging.INFO)
@@ -169,6 +168,7 @@ def main(args=None):
             "%Y-%m-%d_%H_%M"))  # ad a timestep to each project to make repeated experiments unique
 
         config['EXP_PATH'] = os.path.join(EXPERIMENTS_ROOT, EXPERIMENT, timestemp)
+
         config['MODEL_PATH'] = os.path.join(config['EXP_PATH'], 'model', )
         config['TENSORBOARD_PATH'] = os.path.join(config['EXP_PATH'], 'tensorboard_logs')
         config['CONFIG_PATH'] = os.path.join(config['EXP_PATH'], 'config')
@@ -177,6 +177,8 @@ def main(args=None):
         # this could be more dynamic, This loss worked the best for the ventricle labels
         if 'BcdDiceLoss' in config.get('LOSS_FUNCTION', ''):
             config['LOSS_FUNCTION'] = metr.BceDiceLoss()
+            #config['LOSS_FUNCTION'] = metr.bce_dice_loss
+
         else:
             # handle default - if no loss is specified
             config['LOSS_FUNCTION'] = tf.keras.losses.MSE()
@@ -192,7 +194,7 @@ def main(args=None):
     else:
         print('no config given, build a new one')
 
-        EXPERIMENT = args.exp
+        """EXPERIMENT = args.exp
         timestemp = str(datetime.datetime.now().strftime(
             "%Y-%m-%d_%H_%M"))  # ad a timestep to each project to make repeated experiments unique
 
@@ -268,13 +270,13 @@ def main(args=None):
             metr.dice_coef_labels,  # combination channel
             metr.dice_coef_lower,  # former Myo
             metr.dice_coef_upper,  # former LV
-            # metr.dice_coef_rv # third channel, not needed
+            metr.dice_coef_rv # RV
         ]
 
         LOSS_FUNCTION = metr.BceDiceLoss()  # categorical cross entropy would be more fitting for further enhancements. Needs to be coupled with using the softmax function on the output-layer.
 
         print('init config')
-        config = init_config(config=locals(), save=False)
+        config = init_config(config=locals(), save=False)"""
 
     for f in config.get('FOLDS', [0]):
         print('starting fold: {}'.format(f))

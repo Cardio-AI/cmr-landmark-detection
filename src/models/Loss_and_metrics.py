@@ -141,6 +141,16 @@ def dice_coef_upper(y_true, y_pred): ##LA_changed from LV
     y_true = y_true[...,-1]
     return dice_coef(y_true, y_pred)
 
+def dice_coef_myo(y_true, y_pred): #LA_changed from myo
+    y_pred = y_pred[...,-2]
+    y_true = y_true[...,-2]
+    return dice_coef(y_true, y_pred)
+
+def dice_coef_lv(y_true, y_pred): ##LA_changed from LV
+    y_pred = y_pred[...,-1]
+    y_true = y_true[...,-1]
+    return dice_coef(y_true, y_pred)
+
 
 # ignore background score
 # LA: combination of all channels that are being used, not a seperate third metric. 
@@ -197,7 +207,7 @@ def dice_numpy(y_true, y_pred, empty_score=1.0):
 
 class BceDiceLoss(tf.keras.losses.Loss):
 
-    def __init__(self, w_bce=1, w_dice=1., binary=True, name='BcdDiceLoss'):
+    def __init__(self, w_bce=1., w_dice=1., binary=True, name='BcdDiceLoss'):
 
         super().__init__(name='{}_w_{}_{}'.format(name,w_bce, w_dice))
         self.w_bce = w_bce
