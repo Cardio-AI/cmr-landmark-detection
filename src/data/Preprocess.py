@@ -361,9 +361,9 @@ def match_2d_on_nd(nda, avg):
         logging.info('shape for histogram matching does not fit to any method, return unmodified nda')
         return nda
 
-
+from skimage import exposure
 def match_2d_hist_on_2d(nda, avg):
-    return skimage.exposure.match_histograms(nda, avg, multichannel=False)
+    return skimage.exposure.match_histograms(nda, avg)
 
 
 def match_2d_hist_on_3d(nda, avg):
