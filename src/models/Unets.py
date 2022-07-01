@@ -81,6 +81,7 @@ def create_unet(config, metrics=None, networkname='unet', single_model=True, sup
         metrics = [keras.metrics.binary_accuracy] if metrics is None else metrics
         activation = config.get('ACTIVATION', 'elu')
         loss_f = config.get('LOSS_FUNCTION', keras.losses.categorical_crossentropy) # standard implementation of Loss function is categorical cross entropy. Theoretically better suited for our project. 
+
         batch_norm = config.get('BATCH_NORMALISATION', False)
         use_upsample = config.get('USE_UPSAMPLE', 'False')
         pad = config.get('PAD', 'same')

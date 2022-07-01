@@ -220,8 +220,7 @@ def calc_mean_angle_diff(gt_f, pred_f, isgtmsk=False, ispredmsk=False, usemeanip
 
 
 sorting_lambda = lambda x: int(os.path.basename(x).split('_')[0].split('patient')[1])
-sorting_lambda_frame = lambda x: (
-int(os.path.basename(x).split('_')[0].split('patient')[1]), int(os.path.basename(x).split('_')[1].split('frame')[1]))
+sorting_lambda_frame = lambda x: (int(os.path.basename(x).split('_')[0].split('patient')[1]), int(os.path.basename(x).split('_')[1].split('frame')[1]))
 sorting_lambda_frame_orig = lambda x: (int(os.path.basename(x).split('_')[0].split('patient')[1]),
                                        int(os.path.basename(x).split('_')[1].split('frame')[1].split('.')[0]))
 
@@ -283,19 +282,21 @@ def calc_tpr_thresh(gt, pred, thresh=1000, spacing=1):
     tpr_ant = 0
     tpr_inf = 0
 
-    for i in range(len(gt_ant)):
-        if gt_ant[i] is not None:
-            if pred_ant[i] is not None:
+    for i in range(len(gt_ant)): # along z
+        if gt_ant[i] is not None: # there is gt
+            if pred_ant[i] is not None: # and a pred
+                # it is within the threshold
                 if get_dist(gt_ant[i], pred_ant[i] ) *spacing <= thresh: # otherwise it is a FP
                     tp_ant = tp_ant + 1
             else:
                 fn_ant = fn_ant + 1
+
         if gt_inf[i] is not None:
             if pred_inf[i] is not None:
                 if get_dist(gt_inf[i], pred_inf[i] ) *spacing <= thresh: # otherwise it is a FP
                     tp_inf = tp_inf + 1
-                else:
-                    fn_inf = fn_inf + 1
+            else:
+                fn_inf = fn_inf + 1
 
     if tp_ant > 0:
         tpr_ant = tp_ant /(tp_ant + fn_ant)
@@ -608,7 +609,7 @@ def evaluate_cv_save(exp_path, data_path):
     path_to_exp = exp_path
     # this will collect the predictions within the 4 cv subfolders
     exp_path = os.path.join(path_to_exp, '*/*/')
-    io_files = sorted(glob.glob(os.path.join(data_root, 'io/', '*rvip.nrrd')), key=sorting_lambda_frame)
+    io_files = sorted(glob.glob(os.path.join(data_root, 'io', '*rvip.nrrd')), key=sorting_lambda_frame)
     pred_files = sorted(glob.glob(os.path.join(exp_path, 'pred', '*msk.nrrd')), key=sorting_lambda)
     gt_files = sorted(glob.glob(os.path.join(exp_path, 'gt', '*msk.nrrd')), key=sorting_lambda)
     cmr_files = sorted(glob.glob(os.path.join(exp_path, 'pred', '*cmr.nrrd')), key=sorting_lambda)
@@ -664,7 +665,7 @@ def evaluate_cv(exp_path, data_path):
     path_to_exp = exp_path
     # this will collect the predictions within the 4 cv subfolders
     exp_path = os.path.join(path_to_exp, '*/*/')
-    io_files = sorted(glob.glob(os.path.join(data_root, 'io/', '*rvip.nrrd')), key=sorting_lambda_frame)
+    io_files = sorted(glob.glob(os.path.join(data_root, 'io', '*rvip.nrrd')), key=sorting_lambda_frame)
     pred_files = sorted(glob.glob(os.path.join(exp_path, 'pred', '*msk.nrrd')), key=sorting_lambda)
     gt_files = sorted(glob.glob(os.path.join(exp_path, 'gt', '*msk.nrrd')), key=sorting_lambda)
     cmr_files = sorted(glob.glob(os.path.join(exp_path, 'pred', '*cmr.nrrd')), key=sorting_lambda)
@@ -893,9 +894,3 @@ if __name__ == "__main__":
     results = parser.parse_args()
     print('given parameters: {}'.format(results))
     evaluate_cv(results.exp, results.data)
-    try:
-        pass
-        #evaluate_cv(results.exp, results.data)
-    except Exception as e:
-        print(e)
-    exit()

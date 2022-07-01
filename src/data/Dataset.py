@@ -376,6 +376,45 @@ def create_3d_volumes_from_4d_files(img_f, mask_f, full_path='data/raw/tetra/3D/
 
     return [masked_t, list(img_4d_nda.shape)]
 
+def create_2d_slices_from_4d_volume_file(img_f, export_path):
+    """
+        Expects an 4d-image and -mask file name and a target path
+    filter mask and image volumes with segmentation
+    copy all metadata
+    save them to the destination path
+    :param img_f:
+    :param export_path: str
+    :return:
+    """
+
+    #logging.debug('process file: {}'.format(img_f))
+
+    # get sitk images
+    img_4d_sitk = sitk.ReadImage(img_f)
+
+    # filter 4d image nda according to given mask nda
+
+    img_4d_nda = sitk.GetArrayFromImage(img_4d_sitk)
+    masked_t = list(range(img_4d_nda.shape[0]))
+
+    files = []
+
+    # create t x 3d volumes
+    for img_3d, t in zip(img_4d_nda, masked_t):
+
+        # get patient_name
+        patient_name = os.path.basename(img_f).split('.')[0]
+
+        # create z x 2d slices
+        for z, slice_2d in enumerate(img_3d):
+            # create filenames with reference to t and z position
+            img_file = '{}_t{}_z{}_{}{}'.format(patient_name, str(t), str(z), 'img', '.nrrd')
+            img_file = os.path.join(export_path, img_file)
+            files.append(img_file)
+            # save nrrd file with metadata
+            copy_meta_and_save(slice_2d, img_4d_sitk, img_file, copy_direction=False)
+    return files
+
 
 def create_2d_slices_from_4d_volume_files(img_f, mask_f, export_path, filter_by_mask=True, slice_threshold=2):
     """
@@ -612,8 +651,8 @@ def get_trainings_files(data_path, fold=0, path_to_folds_df='data/raw/gcn_05_202
     df = pd.read_csv(path_to_folds_df)
     patients = df[df.fold.isin([fold])]
     # make sure we count each patient only once
-    patients_train = patients[patients['modality'] == 'train']['patient'].unique()
-    patients_test = patients[patients['modality'] == 'test']['patient'].unique()
+    patients_train = patients[patients['modality'] == 'train']['patient'].str.lower().unique()
+    patients_test = patients[patients['modality'] == 'test']['patient'].str.lower().unique()
     logging.info('Found {} images/masks in {}'.format(len(x), data_path))
     logging.info('Patients train: {}'.format(len(patients_train)))
 
@@ -621,20 +660,20 @@ def get_trainings_files(data_path, fold=0, path_to_folds_df='data/raw/gcn_05_202
         """Helper to filter one list by a list of substrings"""
         from src.data.Dataset import get_patient
         return [str for str in list_of_filenames
-                if get_patient(str) in list_of_patients]
+                if get_patient(str).lower() in list_of_patients]
 
     x_train = sorted(filter_files_for_fold(x, patients_train))
     y_train = sorted(filter_files_for_fold(y, patients_train))
     x_test = sorted(filter_files_for_fold(x, patients_test))
     y_test = sorted(filter_files_for_fold(y, patients_test))
-    # print("This is the output of get_training_files!" + str(x_train), str(y_train), str(x_test), str(y_test))
 
     assert (len(x_train) == len(y_train)), 'len(x_train != len(y_train))'
-    logging.info('Selected {} of {} files with {} of {} patients for training fold {}'.format(len(x_train), len(x),
-                                                                                              len(patients_train),
-                                                                                              len(df.patient.unique()),
-                                                                                              fold))
-
+    logging.info('Selected {} of {} files '
+                 'with {} of {} patients '
+                 'for training fold {}'.format(len(x_train), len(x),
+                                               len(patients_train),
+                                               len(df.patient.unique()),
+                                               fold))
     return x_train, y_train, x_test, y_test
 
 
@@ -1392,3 +1431,127 @@ def get_extremas(df, col='vol in ml', target_col='t_norm'):
     """Helper, returns a dataframe with the timesteps describing the min/max of each patient """
     patients = df['patient'].unique()
     return pd.DataFrame([get_min_max_t_per_patient(df[df['patient'] == p], col, target_col) for p in patients])
+
+def load_tof_phase_gt(filename='/mnt/ssd/data/tof/02_imported_4D_unfiltered/SAx_3D_dicomTags_phase.csv'):
+    """
+    Load a csv file with the ground truth idx per phase
+    This method behave different for the ACDC GT
+    Parameters
+    ----------
+    filename : (str) path to the csv file
+
+    Returns pd.DataFrame with ['patient', 'ED#', 'MS#', 'ES#', 'PF#', 'MD#']
+    -------
+
+    """
+
+    # tof, this phase2idx mapping starts with idx 1, we need a format where we start with 0
+    gt_df = pd.read_csv(filename)
+    gt_df['patient'] = gt_df['patient'].str.lower()
+    gt_df = gt_df[['patient', 'ED#', 'MS#', 'ES#', 'PF#', 'MD#']]
+    print('min\n', gt_df[['ED#', 'MS#', 'ES#', 'PF#', 'MD#']].min())
+    gt_df[['ED#', 'MS#', 'ES#', 'PF#', 'MD#']] = gt_df[['ED#', 'MS#', 'ES#', 'PF#', 'MD#']] - 1
+    gt_df[['ED#', 'MS#', 'ES#', 'PF#', 'MD#']] = gt_df[['ED#', 'MS#', 'ES#', 'PF#', 'MD#']].astype('int')
+    gt_df = gt_df.drop_duplicates(subset='patient')
+    return gt_df
+
+def load_acdc_phase_gt(filename='/mnt/ssd/data/acdc/02_imported_4D_unfiltered/SAx_3D_dicomTags_phase.csv'):
+    # acdc
+    # load gt in the same order as this dataframe, merge on patient
+    gt_df = pd.read_csv(filename)
+    gt_df['patient'] = gt_df['patient'].apply(lambda x: str(x).zfill(3))
+    #print('min\n', gt_df[['ED#', 'MS#', 'ES#', 'PF#', 'MD#']].min())
+    return gt_df
+
+def calc_vol_along_t(file_4d, label=3):
+    """
+    Calc the volume over time for a given 4D CMR filename and a label
+    labels are usually encoded as:
+    0,1,2,3 = background,RV,MYO,LV
+    Parameters
+    ----------
+    file_4d : (str) filename for a 4D CMR
+    label : (int) defining the flat value for a label of interest
+
+    Returns (list) with len(list)== 4D_cmr.shape[0] and the corresponding 3D volumes in ml
+    -------
+
+    """
+    temp = sitk.ReadImage(file_4d)
+    assert temp.GetDimension()==4,'please provide a list of 4D files, got: {}'.format(temp.GetDimension())
+    spacing = temp.GetSpacing()
+    nda = sitk.GetArrayFromImage(temp)
+    lv_voxels = (nda==label).sum(axis=(1,2,3))
+    voxel_size = spacing[0]*spacing[1]*spacing[2]
+    lv_voxels = (lv_voxels*voxel_size)/1000
+    return lv_voxels
+
+def create_lv_vol_df(filenames, dataset='acdc'):
+    """
+    Create a dataframe with:
+
+    df = pd.DataFrame({'patient_long':patients_long,
+                   'patient': patients,
+                   'ed': ed_idxs,
+                   'es': es_idxs,
+                   'volume_change': volumes
+                  'cycle_len': cycle_len}
+
+    Parameters
+    ----------
+    filenames : (list of str) list of full paths to 4D CMR files (should work with nrrd and nifti)
+    dataset : (str) either 'acdc' or 'tof'
+
+    Returns pd.DataFrame
+    -------
+
+    """
+
+    assert len(filenames)>0,'please provide a list of 4D files'
+    assert dataset in ['acdc', 'tof']
+
+    volumes = [calc_vol_along_t(x) for x in filenames]
+    ed_idxs = [np.argmax(x) for x in volumes]
+    es_idxs = [np.argmin(x) for x in volumes]
+    cycle_len = [sitk.ReadImage(x).GetSize()[-1] for x in filenames]
+    patients_long = [os.path.basename(x).split('_')[0] for x in filenames]
+
+    # the patient id is different depending on the dataset
+    if dataset.lower() == 'acdc':
+        patients = [x.split('patient')[1] for x in patients_long]
+    else:
+        patients = [x.split('-')[1].lower() for x in patients_long]
+
+    return pd.DataFrame({'patient_long': patients_long,
+                       'patient': patients,
+                       'ed_idxs': ed_idxs,
+                       'es_idxs': es_idxs,
+                       'volume_change': volumes,
+                       'cycle_len': cycle_len})
+
+def predict_phase_from_vol(filenames, dataset):
+    """
+    Calc the LV volume per 3D volume and predict the ED/ES phase
+    Merge the prediction with the gt
+    Calc the pFD per ED/ES
+    Calc the Accuracy per ED/ES
+    Parameters
+    ----------
+    filenames : list of 4D filenames
+    dataset : (str) one of ['acdc', 'tof']
+
+    Returns
+    -------
+
+    """
+    # predict the LV volume over time, create a dataframe
+    df = create_lv_vol_df(filenames=filenames, dataset=dataset)
+
+    # load the gt
+    if dataset == 'acdc':
+        gt_df = load_acdc_phase_gt()
+    else:
+        gt_df = load_tof_phase_gt()
+
+    # inner join of pred and gt
+    return pd.merge(left=df, right=gt_df, how='inner', on='patient')

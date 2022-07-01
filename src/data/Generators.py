@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow.keras
 
-from src.data.Dataset import describe_sitk, copy_meta_and_save
+from src.data.Dataset import describe_sitk, copy_meta_and_save, create_2d_slices_from_4d_volume_file
 from src.data.Preprocess import match_2d_on_nd as mhist
 from src.data.Preprocess import resample_3D, clip_quantile, normalise_image, \
     transform_to_binary_mask, load_masked_img, augmentation_compose_2d_3d_4d, pad_and_crop, calc_resampled_size
@@ -28,7 +28,7 @@ class BaseGenerator(tensorflow.keras.utils.Sequence):
     Base generator class
     """
 
-    def __init__(self, x=None, y=None, config={}, in_memory=False):
+    def __init__(self, x=None, y=None, config=None, in_memory=False):
         """
         Creates a datagenerator for a list of nrrd images and a list of nrrd masks
         :param x: list of nrrd image file names
@@ -36,6 +36,11 @@ class BaseGenerator(tensorflow.keras.utils.Sequence):
         :param config:
         """
 
+        if config is None:
+            config = {}
+        if y is None:
+            self.MASKS = False
+            self.SINGLE_OUTPUT = True
         logging.info('Create DataGenerator')
 
         if y is not None:  # return x, y
@@ -55,11 +60,11 @@ class BaseGenerator(tensorflow.keras.utils.Sequence):
         # linux/windows cleaning
         if platform.system() == 'Linux':
             x = normalise_paths(x)
-            y = normalise_paths(y)
+            if self.MASKS: y = normalise_paths(y)
 
         self.INDICES = list(range(len(x)))
         # override if necessary
-        self.SINGLE_OUTPUT = config.get('SINGLE_OUTPUT', False)
+        #self.SINGLE_OUTPUT = config.get('SINGLE_OUTPUT', False)
 
         self.IMAGES = x
         self.LABELS = y
@@ -217,7 +222,8 @@ class BaseGenerator(tensorflow.keras.utils.Sequence):
 
         logging.debug('Batchsize: {} preprocessing took: {:0.3f} sec'.format(self.BATCHSIZE, time() - t0))
         if self.SINGLE_OUTPUT:
-            return x.astype(np.float32), None
+            #x,None
+            return x.astype(np.float32), y
         else:
             return np.array(x.astype(np.float32)), np.array(y.astype(np.float32))
 
@@ -242,6 +248,7 @@ class DataGenerator(BaseGenerator):
         self.MSK_INTERPOLATION = config.get('MSK_INTERPOLATION', sitk.sitkNearestNeighbor)
         self.GAUS = config.get('GAUS', False)  # apply gaus smoothing
         self.SIGMA = config.get('SIGMA', 1)  # gaus sigma value
+        self.IN_MEMORY = in_memory
         self.config = config
 
         # how to get from image path to mask path
@@ -255,8 +262,12 @@ class DataGenerator(BaseGenerator):
         else:
             self.REPLACE_WILDCARD = GCN_REPLACE_WILDCARD
         # if masks are given
-        if y is not None:
+        if y is None:
+            self.MASKS = False
+            logging.info('inference mode, no masks given, will use x as placeholder for y in fix processing' )
+        else:
             self.MASKS = True
+
         super().__init__(x=x, y=y, config=config, in_memory=in_memory)
 
         # in memory preprocessing for the cluster
@@ -267,34 +278,25 @@ class DataGenerator(BaseGenerator):
             futures = [self.THREAD_POOL.submit(self.__fix_preprocessing__, i) for i in range(len(self.IMAGES))]
             for i, future in enumerate(as_completed(futures)):
                 zipped.append(future.result())
-            self.IMAGES, self.LABELS = list(map(list, zip(*zipped)))
+            self.IMAGES_PROCESSED, self.LABELS_PROCESSED = list(map(list, zip(*zipped)))
 
     def __fix_preprocessing__(self, ID):
-
-        ref = None
-        apply_hist_matching = self.HIST_MATCHING and random.random() < self.AUGMENT_PROB
-        if apply_hist_matching:
-            ref = sitk.GetArrayFromImage(sitk.ReadImage((choice(self.IMAGES))))
-            if ref.ndim == 3:  # for 2D we dont need to select one slice
-                ref = ref[choice(list(range(ref.shape[0] - 1)))]  # choose o random slice as reference
 
         t0 = time()
 
         # load image
         sitk_img = load_masked_img(sitk_img_f=self.IMAGES[ID], mask=self.MASKING_IMAGE,
                                    masking_values=self.MASKING_VALUES, replace=self.REPLACE_WILDCARD)
-        # load mask
-        sitk_msk = load_masked_img(sitk_img_f=self.LABELS[ID], mask=self.MASKING_IMAGE,
-                                   masking_values=self.MASKING_VALUES, replace=self.REPLACE_WILDCARD,
-                                   mask_labels=self.MASK_VALUES)
+        if self.MASKS:
+            # load mask
+            sitk_msk = load_masked_img(sitk_img_f=self.LABELS[ID], mask=self.MASKING_IMAGE,
+                                       masking_values=self.MASKING_VALUES, replace=self.REPLACE_WILDCARD,
+                                       mask_labels=self.MASK_VALUES)
+        else:
+            sitk_msk = sitk_img
 
         self.__plot_state_if_debug__(sitk_img, sitk_msk, t0, 'raw')
         t1 = time()
-
-        if apply_hist_matching:
-            matched = mhist(sitk.GetArrayFromImage(sitk_img), ref)
-            sitk_img = copy_meta_and_save(new_image=matched, reference_sitk_img=sitk_img, full_filename=None,
-                                          override_spacing=None, copy_direction=True)
 
         if self.RESAMPLE:
             if sitk_img.GetDimension() in [2, 3]:
@@ -339,21 +341,34 @@ class DataGenerator(BaseGenerator):
             # mask_nda = normalise_image(mask_nda, normaliser=self.SCALER)
 
         self.__plot_state_if_debug__(img_nda, mask_nda, t1, '{} normalized image:'.format(self.SCALER))
-
         return img_nda, mask_nda
 
     def __preprocess_one_image__(self, i, ID):
         t0 = time()
+        border = 2
+        ref = None
+        apply_hist_matching = self.HIST_MATCHING and random.random() < 0.1 # apply histmatching only in les than 10% of the cases
+        if apply_hist_matching:
+            if hasattr(self, 'IMAGES_PROCESSED'):
+                ref = choice(self.IMAGES_PROCESSED)
+            else:
+                ref = sitk.GetArrayFromImage(sitk.ReadImage(choice(self.IMAGES)))
+            #ref = pad_and_crop(ref, target_shape=self.DIM) # this is not resampled, safe computation time
+            if ref.ndim == 3:  # for 2D we dont need to select one slice
+                ref = ref[choice(list(range(ref.shape[0] - 1))[border:-border])]  # choose o random slice as reference
 
         if self.IN_MEMORY:
-            img_nda, mask_nda = self.IMAGES[ID], self.LABELS[ID]
+            img_nda, mask_nda = self.IMAGES_PROCESSED[ID], self.LABELS_PROCESSED[ID]
         else:
             img_nda, mask_nda = self.__fix_preprocessing__(ID)
         t1 = time()
 
         if self.AUGMENT:  # augment data with albumentation
+            if apply_hist_matching:
+                img_nda = mhist(img_nda, ref)
+
             # use albumentation to apply random rotation scaling and shifts
-            img_nda, mask_nda = augmentation_compose_2d_3d_4d(img_nda, mask_nda, probabillity=0.8, config=self.config)
+            img_nda, mask_nda = augmentation_compose_2d_3d_4d(img_nda, mask_nda, probabillity=self.AUGMENT_PROB, config=self.config)
 
             self.__plot_state_if_debug__(img_nda, mask_nda, t1, 'augmented')
             t1 = time()
@@ -382,6 +397,31 @@ class DataGenerator(BaseGenerator):
 
         return img_nda[..., np.newaxis], mask_nda, i, ID, time() - t0
 
+
+def sliceable(generator, temp_path='data/interim', **args):
+    """
+        Annotation wrapper, that creates t * z 2D generators from a 4D CMR file.
+    This enable to inference a complete 4D CMR sequence on a 2D segmentation model
+
+    Usage:
+    gens = sliceable(DataGenerator,x=files_filtered,y=None, config=pred_config)
+    """
+    temp_path = 'data/interim'
+
+    x = args.get('x', None)
+    y = args.get('y', None)
+    cfg = args.get('config', {})
+    cfg['BATCHSIZE'] = 1
+    dim = sitk.ReadImage(x[0]).GetDimension()
+    if dim == 4:
+        logging.info('found {} 4D files, will return one generator per file with t x z slices'.format(len(x)))
+        generators = []
+        for i in range(len(x)):
+            x_sliced = create_2d_slices_from_4d_volume_file(x[i], temp_path)
+            if y is not None: y_sliced = create_2d_slices_from_4d_volume_file(y[i], temp_path)
+            logging.info('x_sliced: {}, example: {}'.format(len(x_sliced), x_sliced[0]))
+            generators.append(generator(x=x_sliced, y=None, config=cfg))
+    return generators
 
 import linecache
 import sys
