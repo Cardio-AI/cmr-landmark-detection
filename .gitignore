@@ -16,6 +16,8 @@ models/*
 *.html*
 *config.json
 
+# include the poster
+!/data/bvm2022_sven_poster_print.pdf
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
