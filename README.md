@@ -23,30 +23,30 @@ This Readme covers the following topics:
 Please cite the following paper (accepted at Bildverarbeitung für die Medizin (BVM), Informatik aktuell. Springer Vieweg, Wiesbaden 2022) if you use/modify or adapt parts of this repository:
 
     @InProceedings{10.1007/978-3-658-36932-3_43,
-author="Koehler, Sven
-and Sharan, Lalith
-and Kuhm, Julian
-and Ghanaat, Arman
-and Gordejeva, Jelizaveta
-and Simon, Nike K.
-and Grell, Niko M.
-and Andr{\'e}, Florian
-and Engelhardt, Sandy",
-editor="Maier-Hein, Klaus
-and Deserno, Thomas M.
-and Handels, Heinz
-and Maier, Andreas
-and Palm, Christoph
-and Tolxdorff, Thomas",
-title="Comparison of Evaluation Metrics for Landmark Detection in CMR Images",
-booktitle="Bildverarbeitung f{\"u}r die Medizin 2022",
-year="2022",
-publisher="Springer Fachmedien Wiesbaden",
-address="Wiesbaden",
-pages="198--203",
-abstract="Cardiac magnetic resonance (CMR) images are widely used for cardiac diagnosis and ventricular assessment. Extracting specific landmarks like the right ventricular insertion points is of importance for spatial alignment and 3D modelling. The automatic detection of such landmarks has been tackled by multiple groups using Deep Learning, but relatively little attention has been paid to the failure cases of evaluation metrics in this field. In this work, we extended the public ACDC dataset with additional labels of the right ventricular insertion points and compare different variants of a heatmap-based landmark detection pipeline. In this comparison, we demonstrate very likely pitfalls of apparently simple detection and localisation metrics which highlights the importance of a clear detection strategy and the definition of an upper-limit for localisation based metrics. Our preliminary results indicate that a combination of different metrics are necessary, as they yield different winners for method comparison. Additionally, they highlight the need of a comprehensive metric description and evaluation standardisation, especially for the error cases where no metrics could be computed or where no lower/upper boundary of a metric exists. Code and labels: https://github.com/Cardio-AI/rvip{\_}landmark{\_}detection",
-isbn="978-3-658-36932-3"
-}
+    author="Koehler, Sven
+    and Sharan, Lalith
+    and Kuhm, Julian
+    and Ghanaat, Arman
+    and Gordejeva, Jelizaveta
+    and Simon, Nike K.
+    and Grell, Niko M.
+    and Andr{\'e}, Florian
+    and Engelhardt, Sandy",
+    editor="Maier-Hein, Klaus
+    and Deserno, Thomas M.
+    and Handels, Heinz
+    and Maier, Andreas
+    and Palm, Christoph
+    and Tolxdorff, Thomas",
+    title="Comparison of Evaluation Metrics for Landmark Detection in CMR Images",
+    booktitle="Bildverarbeitung f{\"u}r die Medizin 2022",
+    year="2022",
+    publisher="Springer Fachmedien Wiesbaden",
+    address="Wiesbaden",
+    pages="198--203",
+    abstract="Cardiac magnetic resonance (CMR) images are widely used for cardiac diagnosis and ventricular assessment. Extracting specific landmarks like the right ventricular insertion points is of importance for spatial alignment and 3D modelling. The automatic detection of such landmarks has been tackled by multiple groups using Deep Learning, but relatively little attention has been paid to the failure cases of evaluation metrics in this field. In this work, we extended the public ACDC dataset with additional labels of the right ventricular insertion points and compare different variants of a heatmap-based landmark detection pipeline. In this comparison, we demonstrate very likely pitfalls of apparently simple detection and localisation metrics which highlights the importance of a clear detection strategy and the definition of an upper-limit for localisation based metrics. Our preliminary results indicate that a combination of different metrics are necessary, as they yield different winners for method comparison. Additionally, they highlight the need of a comprehensive metric description and evaluation standardisation, especially for the error cases where no metrics could be computed or where no lower/upper boundary of a metric exists. Code and labels: https://github.com/Cardio-AI/rvip{\_}landmark{\_}detection",
+    isbn="978-3-658-36932-3"
+    }
 
 [Arxiv-link](https://arxiv.org/abs/2201.10410)
 
