@@ -269,10 +269,9 @@ pip install --extra-index-url https://test.pypi.org/simple/ ProjectRoot
 Create a jupyter kernel from the activated environment, this kernel will be visible in the jupyter lab
 ```
 python -m ipykernel install --user --name rvip --display-name "rvip kernel"
-
-
-### Enable interactive widgets in Jupyterlab
-
+```
+Enable interactive widgets in Jupyterlab
+```
 Pre-condition: nodejs installed globally or into the conda environment. e.g.:
 ```
 conda install -c conda-forge nodejs
