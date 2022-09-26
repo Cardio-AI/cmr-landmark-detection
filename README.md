@@ -64,7 +64,7 @@ Cardiac Magnetic Resonance (CMR) images are widely used for cardiac diagnosis an
 - The repository dependencies are saved as conda environment (environment.yaml) file. 
 - The Deep Learning models/layers are build with TF 2.X.
 - Setup instruction for the repository are given here: [Install requirements](#Setup)
-- An overview of all files and there usage is given here: [Repository Structure](#project-organization)
+- An overview of all files and their usage is given here: [Repository Structure](#project-organization)
 
 
 ## Project-Organization
